@@ -89,14 +89,15 @@ download_binary() {
 
     info "Downloading ${BINARY_NAME} ${LATEST_VERSION}..."
 
-    # Use curl with progress bar
-    if ! curl -L --progress-bar "$download_url" -o "$temp_file" 2>&1; then
+    # Use curl with progress bar, output progress to stderr
+    if ! curl -L --progress-bar "$download_url" -o "$temp_file"; then
         error "Failed to download binary"
     fi
 
     # Make binary executable
     chmod +x "$temp_file"
 
+    # Return only the temp file path
     echo "$temp_file"
 }
 
