@@ -1,12 +1,17 @@
 import React from "react";
 import { Box, Text } from "ink";
+import { DateTime } from "luxon";
+import { useTheme } from "../hooks/useTheme.js";
 
 interface Props {
+  referenceTime: DateTime;
   offsetMinutes: number;
   columns: number;
+  use24h: boolean;
 }
 
-export function StatusBar({ offsetMinutes, columns }: Props) {
+export function StatusBar({ referenceTime, offsetMinutes, columns, use24h }: Props) {
+  const t = useTheme();
   const refLabel =
     offsetMinutes === 0
       ? "NOW"
@@ -16,26 +21,19 @@ export function StatusBar({ offsetMinutes, columns }: Props) {
             : ""
         }`;
 
+  const timeFmt = use24h ? "HH:mm" : "h:mm a";
+  const dateStr = referenceTime.toFormat(`ccc, LLL d yyyy  ${timeFmt}`);
+
   return (
-    <Box
-      width={columns}
-      justifyContent="space-between"
-      borderStyle="single"
-      borderBottom
-      borderTop={false}
-      borderLeft={false}
-      borderRight={false}
-      paddingLeft={1}
-      paddingRight={1}
-    >
-      <Text bold color="#60a5fa">
-        󰥔 tzone-buddy
-      </Text>
-      <Text>
-        Reference:{" "}
-        <Text bold color={offsetMinutes === 0 ? "#4ade80" : "#f59e0b"}>
-          {refLabel}
+    <Box width={columns} paddingX={1} marginBottom={1}>
+      <Box flexGrow={1}>
+        <Text bold color={t.accent[1]}>
+          󰥔 tzone-buddy
         </Text>
+        <Text color={t.primary[0]}>{"  "}{dateStr}</Text>
+      </Box>
+      <Text bold color={offsetMinutes === 0 ? t.dawn[1] : t.dawn[2]}>
+        {refLabel}
       </Text>
     </Box>
   );

@@ -10,13 +10,13 @@ export function useReferenceTime(now: DateTime) {
     setOffsetMinutes((prev) => prev + direction * 60);
   }, []);
 
-  const slideQuarter = useCallback((direction: 1 | -1) => {
-    setOffsetMinutes((prev) => prev + direction * 15);
+  const slideDay = useCallback((direction: 1 | -1) => {
+    setOffsetMinutes((prev) => prev + direction * 1440);
   }, []);
 
   const reset = useCallback(() => {
     setOffsetMinutes(0);
   }, []);
 
-  return { referenceTime, offsetMinutes, slideHour, slideQuarter, reset };
+  return { referenceTime, offsetMinutes, slideHour, slideDay, reset };
 }

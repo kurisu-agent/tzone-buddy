@@ -157,7 +157,16 @@ export const cities: City[] = [
 ];
 
 export const defaultCities: City[] = [
-  { name: "New York", timezone: "America/New_York", country: "US" },
   { name: "London", timezone: "Europe/London", country: "GB" },
   { name: "Tokyo", timezone: "Asia/Tokyo", country: "JP" },
 ];
+
+/** Look up the system timezone in the city DB, or synthesize a city from the IANA id. */
+export function getHomeCity(): City {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const match = cities.find((c) => c.timezone === tz);
+  if (match) return { ...match };
+  // Derive a readable name from the IANA id: "America/New_York" → "New York"
+  const name = tz.split("/").pop()!.replace(/_/g, " ");
+  return { name, timezone: tz, country: "" };
+}

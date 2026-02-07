@@ -1,63 +1,61 @@
 import React from "react";
 import { Box, Text } from "ink";
 import type { AppMode } from "../types/index.js";
+import { useTheme } from "../hooks/useTheme.js";
 
 interface Hint {
   key: string;
   label: string;
-  keyColor: string;
 }
 
 const gridHints: Hint[] = [
-  { key: " a ", label: "Add", keyColor: "#22c55e" },
-  { key: " d ", label: "Delete", keyColor: "#ef4444" },
-  { key: " ←→ ", label: "Slide", keyColor: "#06b6d4" },
-  { key: " r ", label: "Reset", keyColor: "#eab308" },
-  { key: " ? ", label: "Help", keyColor: "#3b82f6" },
-  { key: " q ", label: "Quit", keyColor: "#ef4444" },
+  { key: "a", label: "Add" },
+  { key: "d", label: "Del" },
+  { key: "←→", label: "Slide" },
+  { key: "S-↑↓", label: "Move" },
+  { key: "r", label: "Reset" },
+  { key: "t", label: "12/24h" },
+  { key: "c", label: "Theme" },
+  { key: "H", label: "Home" },
+  { key: "?", label: "Help" },
+  { key: "q", label: "Quit" },
 ];
 
 const searchHints: Hint[] = [
-  { key: " ↑↓ ", label: "Navigate", keyColor: "#06b6d4" },
-  { key: " Enter ", label: "Select", keyColor: "#22c55e" },
-  { key: " Esc ", label: "Cancel", keyColor: "#ef4444" },
+  { key: "↑↓", label: "Navigate" },
+  { key: "⏎", label: "Select" },
+  { key: "Esc", label: "Cancel" },
 ];
 
-const confirmDeleteHints: Hint[] = [
-  { key: " y ", label: "Confirm", keyColor: "#ef4444" },
-  { key: " n ", label: "Cancel", keyColor: "#22c55e" },
+const confirmHints: Hint[] = [
+  { key: "y", label: "Confirm" },
+  { key: "n", label: "Cancel" },
 ];
 
 const helpHints: Hint[] = [
-  { key: " Esc ", label: "Close", keyColor: "#ef4444" },
+  { key: "Esc", label: "Close" },
 ];
 
 function getHints(mode: AppMode): Hint[] {
   switch (mode) {
-    case "grid":
-      return gridHints;
-    case "search":
-      return searchHints;
-    case "confirmDelete":
-      return confirmDeleteHints;
-    case "help":
-      return helpHints;
+    case "grid": return gridHints;
+    case "search": return searchHints;
+    case "confirmDelete": return confirmHints;
+    case "help": return helpHints;
   }
 }
 
 export function HintBar({ mode }: { mode: AppMode }) {
+  const t = useTheme();
   const hints = getHints(mode);
 
   return (
-    <Box paddingLeft={1}>
-      {hints.map((hint, i) => (
-        <React.Fragment key={hint.label}>
-          {i > 0 && <Text dimColor> › </Text>}
-          <Text backgroundColor={hint.keyColor} color="#000000" bold>
-            {hint.key}
-          </Text>
-          <Text dimColor> {hint.label}</Text>
-        </React.Fragment>
+    <Box paddingX={1} marginTop={1} gap={2}>
+      {hints.map((hint) => (
+        <Text key={hint.label}>
+          <Text color={t.primary[1]}>{hint.key}</Text>
+          <Text color={t.primary[0]}> {hint.label}</Text>
+        </Text>
       ))}
     </Box>
   );

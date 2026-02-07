@@ -6,28 +6,31 @@ import { TimezoneRow } from "./TimezoneRow.js";
 interface Props {
   rows: TimezoneRowData[];
   selectedRow: number;
-  cellWidth: number;
   panelWidth: number;
   maxCells: number;
+  use24h: boolean;
+  homeIndex: number;
 }
 
 export function TimelineGrid({
   rows,
   selectedRow,
-  cellWidth,
   panelWidth,
   maxCells,
+  use24h,
+  homeIndex,
 }: Props) {
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" gap={1}>
       {rows.map((row, i) => (
         <TimezoneRow
           key={`${row.city.name}-${row.city.timezone}`}
           row={row}
           isSelected={i === selectedRow}
-          cellWidth={cellWidth}
+          isHome={i === homeIndex}
           panelWidth={panelWidth}
           maxCells={maxCells}
+          use24h={use24h}
         />
       ))}
     </Box>
