@@ -84,11 +84,12 @@ get_latest_version() {
 # Download the binary
 download_binary() {
     local download_url="https://github.com/${REPO}/releases/download/${LATEST_VERSION}/${ASSET_NAME}"
-    local temp_file="/tmp/${BINARY_NAME}-download"
+    local temp_file="/tmp/${BINARY_NAME}-download-$$"
 
-    info "Downloading ${BINARY_NAME} from: $download_url"
+    info "Downloading ${BINARY_NAME} ${LATEST_VERSION}..."
 
-    if ! curl -fsSL "$download_url" -o "$temp_file"; then
+    # Use curl with progress bar
+    if ! curl -L --progress-bar "$download_url" -o "$temp_file" 2>&1; then
         error "Failed to download binary"
     fi
 
@@ -166,10 +167,7 @@ install_binary() {
 
 # Main installation flow
 main() {
-    echo "" >&2
-    echo "================================" >&2
-    echo "  tzone-buddy installer" >&2
-    echo "================================" >&2
+    info "Installing tzone-buddy..."
     echo "" >&2
 
     # Check for required tools
@@ -189,8 +187,14 @@ main() {
     install_binary "$TEMP_BINARY"
     check_path
 
-    echo "" >&2
-    success "Installation complete!"
+    # Show installed version
+    if command -v "$BINARY_NAME" >/dev/null 2>&1; then
+        local installed_version=$("$BINARY_NAME" --version 2>/dev/null || echo "unknown")
+        success "Installation complete! ($installed_version)"
+    else
+        success "Installation complete! (${LATEST_VERSION})"
+    fi
+
     echo "" >&2
     echo "Run '${BINARY_NAME}' to start the application" >&2
     echo "" >&2
