@@ -17,15 +17,15 @@ NC='\033[0m' # No Color
 
 # Logging functions
 info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" >&2
 }
 
 warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" >&2
 }
 
 error() {
@@ -128,18 +128,18 @@ check_path() {
                 ;;
         esac
 
-        echo ""
-        echo "To add it to your PATH, run:"
-        echo ""
+        echo "" >&2
+        echo "To add it to your PATH, run:" >&2
+        echo "" >&2
         if [ "$SHELL_NAME" = "fish" ]; then
-            echo "  echo 'set -gx PATH \$PATH $INSTALL_DIR' >> $RC_FILE"
+            echo "  echo 'set -gx PATH \$PATH $INSTALL_DIR' >> $RC_FILE" >&2
         else
-            echo "  echo 'export PATH=\"\$PATH:$INSTALL_DIR\"' >> $RC_FILE"
+            echo "  echo 'export PATH=\"\$PATH:$INSTALL_DIR\"' >> $RC_FILE" >&2
         fi
-        echo ""
-        echo "Then reload your shell configuration:"
-        echo "  source $RC_FILE"
-        echo ""
+        echo "" >&2
+        echo "Then reload your shell configuration:" >&2
+        echo "  source $RC_FILE" >&2
+        echo "" >&2
     fi
 }
 
@@ -166,11 +166,11 @@ install_binary() {
 
 # Main installation flow
 main() {
-    echo ""
-    echo "================================"
-    echo "  tzone-buddy installer"
-    echo "================================"
-    echo ""
+    echo "" >&2
+    echo "================================" >&2
+    echo "  tzone-buddy installer" >&2
+    echo "================================" >&2
+    echo "" >&2
 
     # Check for required tools
     for tool in curl sed grep; do
@@ -189,11 +189,11 @@ main() {
     install_binary "$TEMP_BINARY"
     check_path
 
-    echo ""
+    echo "" >&2
     success "Installation complete!"
-    echo ""
-    echo "Run '${BINARY_NAME}' to start the application"
-    echo ""
+    echo "" >&2
+    echo "Run '${BINARY_NAME}' to start the application" >&2
+    echo "" >&2
 }
 
 # Run main function
