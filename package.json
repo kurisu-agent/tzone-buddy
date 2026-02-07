@@ -1,0 +1,28 @@
+{
+  "name": "tzone-buddy",
+  "version": "0.1.0",
+  "description": "Terminal-based World Time Buddy TUI",
+  "type": "module",
+  "bin": {
+    "tzone-buddy": "./src/cli.tsx"
+  },
+  "scripts": {
+    "dev": "bun --watch src/cli.tsx",
+    "dev:hot": "bun --hot src/cli.tsx",
+    "build": "bun build --compile src/cli.tsx --outfile tzone-buddy",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@inkjs/ui": "^2.0.0",
+    "fuse.js": "^7.0.0",
+    "ink": "^6.0.0",
+    "luxon": "^3.5.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.0",
+    "@types/react": "^19.0.0",
+    "ink-testing-library": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

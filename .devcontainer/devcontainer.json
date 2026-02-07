@@ -1,0 +1,6 @@
+{
+  "name": "tzone-buddy",
+  "image": "oven/bun:latest",
+  "postCreateCommand": "bun install",
+  "remoteUser": "bun"
+}

@@ -1,0 +1,17 @@
+app-id: com.github.kurisu_agent.tzone_buddy
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: tzone-buddy
+
+finish-args:
+  - --filesystem=~/.config/tzone-buddy:create
+
+modules:
+  - name: tzone-buddy
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 tzone-buddy /app/bin/tzone-buddy
+    sources:
+      - type: file
+        path: ../tzone-buddy
