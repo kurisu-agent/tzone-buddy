@@ -8,9 +8,11 @@ interface Props {
   offsetMinutes: number;
   columns: number;
   use24h: boolean;
+  updateAvailable?: boolean;
+  isUpdating?: boolean;
 }
 
-export function StatusBar({ referenceTime, offsetMinutes, columns, use24h }: Props) {
+export function StatusBar({ referenceTime, offsetMinutes, columns, use24h, updateAvailable, isUpdating }: Props) {
   const t = useTheme();
   const refLabel =
     offsetMinutes === 0
@@ -30,6 +32,12 @@ export function StatusBar({ referenceTime, offsetMinutes, columns, use24h }: Pro
         <Text bold color={t.accent[1]}>
           󰥔 tzone-buddy
         </Text>
+        {updateAvailable && !isUpdating && (
+          <Text color={t.accent[2]}>{"  "}↑ Update available</Text>
+        )}
+        {isUpdating && (
+          <Text color={t.dawn[2]}>{"  "}Updating...</Text>
+        )}
         <Text color={t.primary[0]}>{"  "}{dateStr}</Text>
       </Box>
       <Text bold color={offsetMinutes === 0 ? t.dawn[1] : t.dawn[2]}>
