@@ -5,21 +5,22 @@ import { loadConfig, saveConfig } from "../lib/config.js";
 export function useConfig(
   cities: City[],
   setCities: (cities: City[]) => void,
-): { config: AppConfig } {
+): void {
   const config = useRef<AppConfig>(loadConfig());
   const initialized = useRef(false);
 
-  // Load config on mount
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
       const loaded = loadConfig();
       config.current = loaded;
-      setCities(loaded.cities);
+      if (loaded.cities.length > 0) {
+        setCities(loaded.cities);
+      }
     }
   }, [setCities]);
 
-  // Auto-save when cities change
+  // Auto-save when cities change (only the user list, not home)
   useEffect(() => {
     if (!initialized.current) return;
     const newConfig: AppConfig = {
@@ -29,6 +30,4 @@ export function useConfig(
     config.current = newConfig;
     saveConfig(newConfig);
   }, [cities]);
-
-  return { config: config.current };
 }

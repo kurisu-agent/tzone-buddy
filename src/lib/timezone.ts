@@ -2,10 +2,6 @@ import { DateTime } from "luxon";
 import { getTimePeriod } from "../data/colorScheme.js";
 import type { City, HourData, TimezoneRowData } from "../types/index.js";
 
-export function getNow(): DateTime {
-  return DateTime.now();
-}
-
 export function getTimeInZone(
   referenceTime: DateTime,
   timezone: string,
@@ -13,8 +9,8 @@ export function getTimeInZone(
   return referenceTime.setZone(timezone);
 }
 
-export function formatTime(dt: DateTime): string {
-  return dt.toFormat("h:mm a");
+export function formatTime(dt: DateTime, use24h: boolean): string {
+  return use24h ? dt.toFormat("HH:mm") : dt.toFormat("h:mm a");
 }
 
 export function getAbbreviation(dt: DateTime): string {
@@ -31,24 +27,29 @@ export function getDayOffset(reference: DateTime, zoned: DateTime): string {
   return `${rounded}`;
 }
 
-export function computeHours(
+/**
+ * Compute 24 hour cells aligned to the home timezone's day.
+ * Each column represents the same absolute moment across all rows.
+ * The "now" column index is the home timezone's current hour.
+ */
+export function computeAlignedHours(
   referenceTime: DateTime,
-  timezone: string,
+  homeTimezone: string,
+  targetTimezone: string,
 ): HourData[] {
-  const zoned = referenceTime.setZone(timezone);
-  const currentHour = zoned.hour;
-  const startOfDay = zoned.startOf("day");
+  const homeZoned = referenceTime.setZone(homeTimezone);
+  const homeCurrentHour = homeZoned.hour;
+  const homeStartOfDay = homeZoned.startOf("day");
 
   return Array.from({ length: 24 }, (_, i) => {
-    const hourDt = startOfDay.plus({ hours: i });
-    const hour = hourDt.hour;
-    const isPM = hour >= 12;
-    const display = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const absoluteTime = homeStartOfDay.plus({ hours: i });
+    const targetTime = absoluteTime.setZone(targetTimezone);
+    const hour = targetTime.hour;
     return {
       hour,
       period: getTimePeriod(hour),
-      isCurrent: hour === currentHour,
-      label: `${display}${isPM ? "p" : "a"}`,
+      isCurrent: i === homeCurrentHour,
+      label: String(hour),
     };
   });
 }
@@ -56,13 +57,15 @@ export function computeHours(
 export function computeRowData(
   referenceTime: DateTime,
   city: City,
+  homeTimezone: string,
+  use24h: boolean,
 ): TimezoneRowData {
   const zoned = getTimeInZone(referenceTime, city.timezone);
   return {
     city,
-    currentTime: formatTime(zoned),
+    currentTime: formatTime(zoned, use24h),
     abbreviation: getAbbreviation(zoned),
     dayOffset: getDayOffset(referenceTime, zoned),
-    hours: computeHours(referenceTime, city.timezone),
+    hours: computeAlignedHours(referenceTime, homeTimezone, city.timezone),
   };
 }
