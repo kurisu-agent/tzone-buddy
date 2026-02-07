@@ -4,7 +4,7 @@ set -e
 # tzone-buddy installer script
 # Usage: curl -fsSL https://raw.githubusercontent.com/kurisu-agent/tzone-buddy/main/install.sh | bash
 
-INSTALLER_VERSION="1.0.1"
+INSTALLER_VERSION="1.0.2"
 REPO="kurisu-agent/tzone-buddy"
 BINARY_NAME="tzone-buddy"
 INSTALL_DIR="${HOME}/.local/bin"
