@@ -18,13 +18,19 @@ jobs:
 
       - run: bun install
 
+      - name: Create devtools stub
+        run: |
+          mkdir -p node_modules/react-devtools-core
+          echo "module.exports = { initialize: () => {}, connectToDevTools: () => {} };" > node_modules/react-devtools-core/index.js
+          echo '{"name":"react-devtools-core","version":"0.0.0","main":"index.js"}' > node_modules/react-devtools-core/package.json
+
       - name: Build binaries
         run: |
           mkdir -p dist
-          bun build --compile --target=bun-linux-x64 --external react-devtools-core src/cli.tsx --outfile dist/tzone-buddy-linux-x64
-          bun build --compile --target=bun-linux-arm64 --external react-devtools-core src/cli.tsx --outfile dist/tzone-buddy-linux-arm64
-          bun build --compile --target=bun-darwin-x64 --external react-devtools-core src/cli.tsx --outfile dist/tzone-buddy-darwin-x64
-          bun build --compile --target=bun-darwin-arm64 --external react-devtools-core src/cli.tsx --outfile dist/tzone-buddy-darwin-arm64
+          bun build --compile --target=bun-linux-x64 --minify src/cli.tsx --outfile dist/tzone-buddy-linux-x64
+          bun build --compile --target=bun-linux-arm64 --minify src/cli.tsx --outfile dist/tzone-buddy-linux-arm64
+          bun build --compile --target=bun-darwin-x64 --minify src/cli.tsx --outfile dist/tzone-buddy-darwin-x64
+          bun build --compile --target=bun-darwin-arm64 --minify src/cli.tsx --outfile dist/tzone-buddy-darwin-arm64
 
       - name: Create release
         uses: softprops/action-gh-release@v2

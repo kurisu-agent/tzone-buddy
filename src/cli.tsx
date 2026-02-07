@@ -1,4 +1,10 @@
 #!/usr/bin/env bun
+
+// Ensure DEV is never true in production to avoid react-devtools-core import
+if (process.env.DEV === 'true') {
+  delete process.env.DEV;
+}
+
 import React from "react";
 import { render } from "ink";
 import { App } from "./app.js";
