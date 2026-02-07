@@ -1,0 +1,5 @@
+node_modules/
+dist/
+tzone-buddy
+*.tgz
+.DS_Store
