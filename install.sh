@@ -4,6 +4,7 @@ set -e
 # tzone-buddy installer script
 # Usage: curl -fsSL https://raw.githubusercontent.com/kurisu-agent/tzone-buddy/main/install.sh | bash
 
+INSTALLER_VERSION="1.0.1"
 REPO="kurisu-agent/tzone-buddy"
 BINARY_NAME="tzone-buddy"
 INSTALL_DIR="${HOME}/.local/bin"
@@ -167,7 +168,13 @@ install_binary() {
 
 # Main installation flow
 main() {
-    info "Installing tzone-buddy..."
+    # Check for version flag
+    if [ "$1" = "--version" ] || [ "$1" = "-v" ]; then
+        echo "tzone-buddy installer v${INSTALLER_VERSION}"
+        exit 0
+    fi
+
+    info "tzone-buddy installer v${INSTALLER_VERSION}"
     echo "" >&2
 
     # Check for required tools
