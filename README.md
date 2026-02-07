@@ -2,7 +2,7 @@
 
 A beautiful terminal-based world clock TUI (Text User Interface) inspired by World Time Buddy. Keep track of multiple timezones right in your terminal with an intuitive interface and gorgeous themes.
 
-![tzone-buddy screenshot](./screenshot.png)
+![tzone-buddy screenshot](screenshot.png)
 
 ## ✨ Features
 
