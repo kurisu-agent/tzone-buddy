@@ -9,6 +9,7 @@ import { useTimezoneData } from "./hooks/useTimezoneData.js";
 import { useCityList } from "./hooks/useCityList.js";
 import { useConfig } from "./hooks/useConfig.js";
 import { useTerminalSize } from "./hooks/useTerminalSize.js";
+import { useUpdateCheck } from "./hooks/useUpdateCheck.js";
 import { defaultCities, getHomeCity } from "./data/cities.js";
 import { TimelineGrid } from "./components/TimelineGrid.js";
 import { StatusBar } from "./components/StatusBar.js";
@@ -39,6 +40,9 @@ export function App() {
     useCityList(defaultCities);
 
   useConfig(cities, setCities);
+
+  // Update check hook
+  const { updateAvailable, isUpdating, performUpdate } = useUpdateCheck();
 
   // Display list: optionally prepend home city
   const displayCities = useMemo(() => {
@@ -105,6 +109,10 @@ export function App() {
         setSelectedRow(0);
         return;
       }
+      if (input === "u" && updateAvailable && !isUpdating) {
+        performUpdate();
+        return;
+      }
       if (input === "?") { setMode("help"); return; }
       if (input === "q") { exit(); return; }
     },
@@ -149,6 +157,8 @@ export function App() {
           offsetMinutes={offsetMinutes}
           columns={columns}
           use24h={use24h}
+          updateAvailable={updateAvailable}
+          isUpdating={isUpdating}
         />
 
         {mode === "search" ? (
@@ -185,7 +195,7 @@ export function App() {
         )}
 
         <TimeSliderBar offsetMinutes={offsetMinutes} columns={columns} />
-        <HintBar mode={mode} />
+        <HintBar mode={mode} updateAvailable={updateAvailable} />
       </Box>
     </ThemeContext.Provider>
   );

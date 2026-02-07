@@ -45,9 +45,14 @@ function getHints(mode: AppMode): Hint[] {
   }
 }
 
-export function HintBar({ mode }: { mode: AppMode }) {
+export function HintBar({ mode, updateAvailable }: { mode: AppMode; updateAvailable?: boolean }) {
   const t = useTheme();
-  const hints = getHints(mode);
+  let hints = getHints(mode);
+
+  // Add update hint if update is available and in grid mode
+  if (mode === "grid" && updateAvailable) {
+    hints = [...hints.slice(0, -1), { key: "u", label: "Update" }, hints[hints.length - 1]];
+  }
 
   return (
     <Box paddingX={1} marginTop={1} gap={2}>
