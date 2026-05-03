@@ -3,3 +3,5 @@ dist/
 tzone-buddy
 *.tgz
 .DS_Store
+result
+result-*
