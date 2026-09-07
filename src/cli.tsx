@@ -8,6 +8,7 @@ if (process.env.DEV === 'true') {
 import React from "react";
 import { render } from "ink";
 import { App } from "./app.js";
+import { runPrintMode } from "./lib/convert.js";
 import packageJson from "../package.json";
 
 // Check for version flag
@@ -22,9 +23,17 @@ if (args.includes("--help") || args.includes("-h")) {
 Terminal-based World Time Buddy TUI
 
 Usage:
-  tzone-buddy              Start the TUI application
-  tzone-buddy --version    Show version
-  tzone-buddy --help       Show this help
+  tzone-buddy                  Start the TUI application
+  tzone-buddy <time> [zone]    Print configured cities at the given time
+                               (zone defaults to UTC; fuzzy matching works,
+                               e.g. "Japan", "Thailand", "tokyo")
+  tzone-buddy --version        Show version
+  tzone-buddy --help           Show this help
+
+Examples:
+  tzone-buddy 0700 UTC
+  tzone-buddy 7:30pm Japan
+  tzone-buddy 1400 Thailand
 
 Keyboard shortcuts:
   a         Add city
@@ -38,6 +47,11 @@ Keyboard shortcuts:
 
 More info: https://github.com/kurisu-agent/tzone-buddy`);
   process.exit(0);
+}
+
+const positional = args.filter((a) => !a.startsWith("-"));
+if (positional.length > 0) {
+  process.exit(runPrintMode(positional));
 }
 
 render(<App />);

@@ -64,6 +64,28 @@ Simply run:
 tzone-buddy
 ```
 
+### Quick time lookup
+
+Pass a time (and optionally a timezone, defaulting to UTC) to print your
+configured cities at that moment instead of launching the TUI:
+
+```bash
+tzone-buddy 0700 UTC
+tzone-buddy 7:30pm Japan
+tzone-buddy 1400 Thailand
+```
+
+```
+  07:00 UTC — Mon 2026-09-07
+
+  London  GMT+1  08:00  Mon 2026-09-07
+  Tokyo   GMT+9  16:00  Mon 2026-09-07
+```
+
+Times accept `0700`, `07:00`, `7`, or `7:30pm`. Zones accept exact IANA names
+(`Asia/Tokyo`, `UTC`) or fuzzy city/country names (`Japan`, `Thailand`,
+`tokyo`).
+
 ## ⌨️ Keyboard Shortcuts
 
 ### Navigation
