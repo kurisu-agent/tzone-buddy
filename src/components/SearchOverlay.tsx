@@ -3,6 +3,7 @@ import { Box, Text, useInput } from "ink";
 import type { City } from "../types/index.js";
 import { useTheme } from "../hooks/useTheme.js";
 import { searchCities } from "../lib/search.js";
+import { countryFlag } from "../lib/flags.js";
 
 interface Props {
   isActive: boolean;
@@ -62,7 +63,7 @@ export function SearchOverlay({ isActive, onSelect, onCancel }: Props) {
             bold={i === selectedIndex}
             color={i === selectedIndex ? t.accent[1] : t.primary[2]}
           >
-            {" "}{city.name}
+            {" "}{countryFlag(city.country)} {city.name}
           </Text>
           <Text color={t.primary[0]}>
             {" "}{city.country} · {city.timezone}

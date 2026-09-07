@@ -2,6 +2,7 @@ import Fuse from "fuse.js";
 import { DateTime, IANAZone } from "luxon";
 import { cities } from "../data/cities.js";
 import { loadConfig } from "./config.js";
+import { countryFlag } from "./flags.js";
 import { getAbbreviation } from "./timezone.js";
 
 export interface ParsedTime {
@@ -126,14 +127,17 @@ export function runPrintMode(positional: string[]): number {
   );
   lines.push("");
 
-  const nameWidth = Math.max(...config.cities.map((c) => c.name.length));
-  const abbrWidth = Math.max(
-    ...config.cities.map((c) => getAbbreviation(ref.setZone(c.timezone)).length),
+  const sorted = [...config.cities].sort(
+    (a, b) => ref.setZone(a.timezone).offset - ref.setZone(b.timezone).offset,
   );
-  for (const city of config.cities) {
+  const nameWidth = Math.max(...sorted.map((c) => c.name.length));
+  const abbrWidth = Math.max(
+    ...sorted.map((c) => getAbbreviation(ref.setZone(c.timezone)).length),
+  );
+  for (const city of sorted) {
     const zoned = ref.setZone(city.timezone);
     lines.push(
-      `${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
+      `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
     );
   }
   lines.push("");
