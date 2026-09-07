@@ -121,7 +121,7 @@ export function runPrintMode(positional: string[]): number {
     : "";
 
   const lines: string[] = [];
-  lines.push("");
+  lines.push("```");
   lines.push(
     `${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched}`,
   );
@@ -141,7 +141,7 @@ export function runPrintMode(positional: string[]): number {
       `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
     );
   }
-  lines.push("");
+  lines.push("```");
 
   console.log(lines.join("\n"));
   return 0;
