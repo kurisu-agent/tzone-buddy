@@ -25,6 +25,7 @@ Terminal-based World Time Buddy TUI
 Usage:
   tzone-buddy                  Start the TUI application
   tzone-buddy <time> [zone]    Print configured cities at the given time
+  tzone-buddy now [zone]       Same, at the current time
                                (zone defaults to UTC; fuzzy matching works,
                                e.g. "Japan", "Thailand", "tokyo")
   tzone-buddy --version        Show version
@@ -34,6 +35,7 @@ Examples:
   tzone-buddy 0700 UTC
   tzone-buddy 7:30pm Japan
   tzone-buddy 1400 Thailand
+  tzone-buddy now
 
 Keyboard shortcuts:
   a         Add city
