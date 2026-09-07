@@ -73,6 +73,7 @@ configured cities at that moment instead of launching the TUI:
 tzone-buddy 0700 UTC
 tzone-buddy 7:30pm Japan
 tzone-buddy 1400 Thailand
+tzone-buddy now
 ```
 
 ````
@@ -84,7 +85,7 @@ tzone-buddy 1400 Thailand
 ```
 ````
 
-Times accept `0700`, `07:00`, `7`, or `7:30pm`. Zones accept exact IANA names
+Times accept `0700`, `07:00`, `7`, `7:30pm`, or `now` for the current time. Zones accept exact IANA names
 (`Asia/Tokyo`, `UTC`) or fuzzy city/country names (`Japan`, `Thailand`,
 `tokyo`). Entries are sorted by UTC offset, furthest in the future first. The
 output is wrapped in ``` fences so it pastes straight into markdown as a

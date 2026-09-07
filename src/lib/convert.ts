@@ -92,10 +92,12 @@ export function resolveZone(query: string): ResolvedZone | null {
  * Returns a process exit code.
  */
 export function runPrintMode(positional: string[]): number {
-  const parsed = parseTimeArg(positional[0]!);
-  if (!parsed) {
+  const timeArg = positional[0]!;
+  const isNow = timeArg.toLowerCase() === "now";
+  const parsed = isNow ? null : parseTimeArg(timeArg);
+  if (!isNow && !parsed) {
     console.error(
-      `Invalid time: "${positional[0]}" (expected e.g. 0700, 07:00, 7pm)`,
+      `Invalid time: "${positional[0]}" (expected e.g. 0700, 07:00, 7pm, now)`,
     );
     return 1;
   }
@@ -107,9 +109,15 @@ export function runPrintMode(positional: string[]): number {
     return 1;
   }
 
-  const ref = DateTime.now()
-    .setZone(resolved.zone)
-    .set({ hour: parsed.hour, minute: parsed.minute, second: 0, millisecond: 0 });
+  let ref = DateTime.now().setZone(resolved.zone);
+  if (parsed) {
+    ref = ref.set({
+      hour: parsed.hour,
+      minute: parsed.minute,
+      second: 0,
+      millisecond: 0,
+    });
+  }
   if (!ref.isValid) {
     console.error(`Unknown timezone: "${zoneQuery}"`);
     return 1;
