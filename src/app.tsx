@@ -25,7 +25,7 @@ export function App() {
   const [mode, setMode] = useState<AppMode>("grid");
   const [selectedRow, setSelectedRow] = useState(0);
   const [themeIndex, setThemeIndex] = useState(0);
-  const [use24h, setUse24h] = useState(false);
+  const [use24h, setUse24h] = useState(true);
   const [showHome, setShowHome] = useState(true);
   const { columns } = useTerminalSize();
 

@@ -54,3 +54,12 @@ describe("resolveZone", () => {
     expect(resolveZone("zzzzqqqq")).toBeNull();
   });
 });
+
+describe("countryFlag", () => {
+  test("maps ISO codes to regional indicators", async () => {
+    const { countryFlag } = await import("./flags.js");
+    expect(countryFlag("JP")).toBe("🇯🇵");
+    expect(countryFlag("us")).toBe("🇺🇸");
+    expect(countryFlag("XYZ")).toBe("");
+  });
+});

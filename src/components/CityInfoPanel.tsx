@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Text } from "ink";
 import type { TimezoneRowData } from "../types/index.js";
 import { useTheme } from "../hooks/useTheme.js";
+import { countryFlag } from "../lib/flags.js";
 
 interface Props {
   row: TimezoneRowData;
@@ -12,7 +13,7 @@ interface Props {
 
 function CityInfoPanelInner({ row, isSelected, isHome, width }: Props) {
   const t = useTheme();
-  const nameWidth = width - 6;
+  const nameWidth = width - 9;
   const name = row.city.name.length > nameWidth
     ? row.city.name.slice(0, nameWidth)
     : row.city.name.padEnd(nameWidth);
@@ -27,6 +28,7 @@ function CityInfoPanelInner({ row, isSelected, isHome, width }: Props) {
     <Box flexDirection="column" width={width} marginRight={1}>
       <Text>
         <Text color={iconColor}>{icon}</Text>
+        <Text>{countryFlag(row.city.country)} </Text>
         <Text color={nameColor} bold={isSelected || isHome}>
           {name}
         </Text>
