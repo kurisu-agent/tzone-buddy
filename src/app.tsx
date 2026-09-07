@@ -36,7 +36,7 @@ export function App() {
   const { referenceTime, offsetMinutes, slideHour, slideDay, reset } =
     useReferenceTime(now);
 
-  const { cities, setCities, addCity, removeCity, moveCity } =
+  const { cities, setCities, addCity, removeCity } =
     useCityList(defaultCities);
 
   useConfig(cities, setCities);
@@ -44,15 +44,21 @@ export function App() {
   // Update check hook
   const { updateAvailable, isUpdating, performUpdate } = useUpdateCheck();
 
-  // Display list: optionally prepend home city
+  // Display list: home city first (when shown), then the rest sorted by
+  // UTC offset, furthest in the future first.
   const displayCities = useMemo(() => {
-    if (!showHome) return cities;
-    // Don't duplicate if home is already in the user list
-    const filtered = cities.filter(
-      (c) => !(c.timezone === homeCity.timezone && c.name === homeCity.name),
+    const filtered = showHome
+      ? cities.filter(
+          (c) => !(c.timezone === homeCity.timezone && c.name === homeCity.name),
+        )
+      : cities;
+    const sorted = [...filtered].sort(
+      (a, b) =>
+        referenceTime.setZone(b.timezone).offset -
+        referenceTime.setZone(a.timezone).offset,
     );
-    return [homeCity, ...filtered];
-  }, [showHome, cities, homeCity]);
+    return showHome ? [homeCity, ...sorted] : sorted;
+  }, [showHome, cities, homeCity, referenceTime]);
 
   const homeOffset = showHome ? 1 : 0;
 
@@ -63,22 +69,6 @@ export function App() {
     (input, key) => {
       if (mode !== "grid") return;
 
-      if (key.shift && key.upArrow) {
-        const userIdx = selectedRow - homeOffset;
-        if (userIdx >= 1) {
-          moveCity(userIdx, -1);
-          setSelectedRow((prev) => prev - 1);
-        }
-        return;
-      }
-      if (key.shift && key.downArrow) {
-        const userIdx = selectedRow - homeOffset;
-        if (userIdx >= 0 && userIdx < cities.length - 1) {
-          moveCity(userIdx, 1);
-          setSelectedRow((prev) => prev + 1);
-        }
-        return;
-      }
       if (key.shift && key.leftArrow) { slideDay(-1); return; }
       if (key.shift && key.rightArrow) { slideDay(1); return; }
 
@@ -123,8 +113,8 @@ export function App() {
     (input, key) => {
       if (mode !== "confirmDelete") return;
       if (input === "y") {
-        const userIdx = selectedRow - homeOffset;
-        removeCity(userIdx);
+        const city = displayCities[selectedRow];
+        if (city && !(showHome && selectedRow === 0)) removeCity(city);
         setSelectedRow((prev) => Math.min(prev, Math.max(0, displayCities.length - 2)));
         setMode("grid");
         return;
@@ -207,7 +197,6 @@ function HelpOverlay() {
     ["↑/k  ↓/j", "Select timezone row"],
     ["←/h  →/l", "Slide reference time ±1h"],
     ["S-←  S-→", "Slide ±1 day"],
-    ["S-↑  S-↓", "Reorder city up/down"],
     ["a", "Add city"],
     ["d", "Delete selected city"],
     ["r", "Reset to now"],
