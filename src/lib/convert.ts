@@ -122,7 +122,7 @@ export function runPrintMode(positional: string[]): number {
   const lines: string[] = [];
   lines.push("");
   lines.push(
-    `  ${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched}`,
+    `${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched}`,
   );
   lines.push("");
 
@@ -133,7 +133,7 @@ export function runPrintMode(positional: string[]): number {
   for (const city of config.cities) {
     const zoned = ref.setZone(city.timezone);
     lines.push(
-      `  ${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
+      `${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
     );
   }
   lines.push("");
