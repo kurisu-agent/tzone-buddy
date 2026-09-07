@@ -12,19 +12,11 @@ export function useCityList(initialCities: City[]) {
     });
   }, []);
 
-  const removeCity = useCallback((index: number) => {
-    setCities((prev) => prev.filter((_, i) => i !== index));
+  const removeCity = useCallback((city: City) => {
+    setCities((prev) =>
+      prev.filter((c) => !(c.name === city.name && c.timezone === city.timezone)),
+    );
   }, []);
 
-  const moveCity = useCallback((index: number, direction: 1 | -1) => {
-    setCities((prev) => {
-      const newIndex = index + direction;
-      if (newIndex < 0 || newIndex >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[newIndex]] = [next[newIndex], next[index]];
-      return next;
-    });
-  }, []);
-
-  return { cities, setCities, addCity, removeCity, moveCity };
+  return { cities, setCities, addCity, removeCity };
 }

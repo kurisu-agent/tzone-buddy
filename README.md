@@ -78,13 +78,13 @@ tzone-buddy 1400 Thailand
 ```
 07:00 UTC — Mon 2026-09-07
 
-🇬🇧 London  GMT+1  08:00  Mon 2026-09-07
 🇯🇵 Tokyo   GMT+9  16:00  Mon 2026-09-07
+🇬🇧 London  GMT+1  08:00  Mon 2026-09-07
 ```
 
 Times accept `0700`, `07:00`, `7`, or `7:30pm`. Zones accept exact IANA names
 (`Asia/Tokyo`, `UTC`) or fuzzy city/country names (`Japan`, `Thailand`,
-`tokyo`). Entries are sorted by UTC offset.
+`tokyo`). Entries are sorted by UTC offset, furthest in the future first.
 
 ## ⌨️ Keyboard Shortcuts
 
@@ -92,7 +92,6 @@ Times accept `0700`, `07:00`, `7`, or `7:30pm`. Zones accept exact IANA names
 - `↑/k` `↓/j` - Select timezone row
 - `←/h` `→/l` - Slide reference time ±1 hour
 - `Shift+←` `Shift+→` - Slide ±1 day
-- `Shift+↑` `Shift+↓` - Reorder cities
 
 ### Actions
 - `a` - Add a new city

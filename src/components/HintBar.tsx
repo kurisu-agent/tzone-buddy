@@ -12,7 +12,6 @@ const gridHints: Hint[] = [
   { key: "a", label: "Add" },
   { key: "d", label: "Del" },
   { key: "←→", label: "Slide" },
-  { key: "S-↑↓", label: "Move" },
   { key: "r", label: "Reset" },
   { key: "t", label: "12/24h" },
   { key: "c", label: "Theme" },

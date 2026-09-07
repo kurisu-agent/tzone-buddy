@@ -127,8 +127,9 @@ export function runPrintMode(positional: string[]): number {
   );
   lines.push("");
 
+  // Furthest in the future (largest UTC offset) first.
   const sorted = [...config.cities].sort(
-    (a, b) => ref.setZone(a.timezone).offset - ref.setZone(b.timezone).offset,
+    (a, b) => ref.setZone(b.timezone).offset - ref.setZone(a.timezone).offset,
   );
   const nameWidth = Math.max(...sorted.map((c) => c.name.length));
   const abbrWidth = Math.max(
