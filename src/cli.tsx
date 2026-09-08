@@ -26,6 +26,7 @@ Usage:
   tzone-buddy                  Start the TUI application
   tzone-buddy <time> [zone]    Print configured cities at the given time
   tzone-buddy now [zone]       Same, at the current time
+  tzone-buddy <time> --wide    Full layout (zone abbreviations, ISO dates)
                                (zone defaults to UTC; fuzzy matching works,
                                e.g. "Japan", "Thailand", "tokyo")
   tzone-buddy --version        Show version
@@ -36,6 +37,7 @@ Examples:
   tzone-buddy 7:30pm Japan
   tzone-buddy 1400 Thailand
   tzone-buddy now
+  tzone-buddy now --wide
 
 Keyboard shortcuts:
   a         Add city
@@ -53,7 +55,7 @@ More info: https://github.com/kurisu-agent/tzone-buddy`);
 
 const positional = args.filter((a) => !a.startsWith("-"));
 if (positional.length > 0) {
-  process.exit(runPrintMode(positional));
+  process.exit(runPrintMode(positional, { wide: args.includes("--wide") }));
 }
 
 render(<App />);
