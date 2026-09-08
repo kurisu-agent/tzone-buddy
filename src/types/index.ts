@@ -2,6 +2,8 @@ export interface City {
   name: string;
   timezone: string;
   country: string;
+  /** Compact print-mode label, e.g. "LA"; skips 12-char truncation. */
+  short?: string;
 }
 
 export interface HourData {

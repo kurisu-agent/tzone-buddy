@@ -4,6 +4,7 @@ import { cities } from "../data/cities.js";
 import { loadConfig } from "./config.js";
 import { countryFlag } from "./flags.js";
 import { getAbbreviation } from "./timezone.js";
+import type { City } from "../types/index.js";
 
 export interface ParsedTime {
   hour: number;
@@ -87,11 +88,90 @@ export function resolveZone(query: string): ResolvedZone | null {
   return { zone: best.timezone, matchedFrom: query };
 }
 
+export interface RenderOptions {
+  wide?: boolean;
+  matchedFrom?: string;
+  zone?: string;
+}
+
+// Compact rows must stay within ~32 monospace columns so a code block
+// survives phone-width chat clients unwrapped. The city column is capped
+// at COMPACT_CITY_WIDTH; a `short` config field skips truncation.
+const COMPACT_CITY_WIDTH = 12;
+
+function compactCityLabel(city: City): string {
+  if (city.short) return city.short;
+  return city.name.length > COMPACT_CITY_WIDTH
+    ? city.name.slice(0, COMPACT_CITY_WIDTH)
+    : city.name;
+}
+
 /**
- * Print the configured cities' local times for a given time of day.
- * Returns a process exit code.
+ * Render the lookup as lines (including the ``` fences). Compact by
+ * default; `wide` restores the full layout with zone abbreviations and
+ * ISO dates per row.
  */
-export function runPrintMode(positional: string[]): number {
+export function renderLookup(
+  ref: DateTime,
+  configCities: City[],
+  opts: RenderOptions = {},
+): string[] {
+  // Furthest in the future (largest UTC offset) first.
+  const sorted = [...configCities].sort(
+    (a, b) => ref.setZone(b.timezone).offset - ref.setZone(a.timezone).offset,
+  );
+  const zoned = sorted.map((c) => ref.setZone(c.timezone));
+  const matched = opts.matchedFrom
+    ? `(${opts.matchedFrom} → ${opts.zone})`
+    : "";
+
+  const lines: string[] = ["```"];
+
+  if (opts.wide) {
+    lines.push(
+      `${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched ? `  ${matched}` : ""}`,
+    );
+    lines.push("");
+    const nameWidth = Math.max(...sorted.map((c) => c.name.length));
+    const abbrWidth = Math.max(...zoned.map((z) => getAbbreviation(z).length));
+    sorted.forEach((city, i) => {
+      const z = zoned[i]!;
+      lines.push(
+        `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(z).padEnd(abbrWidth)}  ${z.toFormat("HH:mm")}  ${z.toFormat("ccc yyyy-MM-dd")}`,
+      );
+    });
+  } else {
+    lines.push(
+      `${ref.toFormat("ccc d MMM yyyy")}, ${ref.toFormat("HH:mm")} ${getAbbreviation(ref)}`,
+    );
+    if (matched) lines.push(matched);
+    lines.push("");
+    const labels = sorted.map(compactCityLabel);
+    const cityWidth = Math.min(
+      COMPACT_CITY_WIDTH,
+      Math.max(...labels.map((l) => l.length)),
+    );
+    const days = zoned.map((z) => z.toFormat("ccc d"));
+    const dayWidth = Math.max(...days.map((d) => d.length));
+    sorted.forEach((city, i) => {
+      lines.push(
+        `${countryFlag(city.country)} ${labels[i]!.padEnd(cityWidth)}  ${days[i]!.padEnd(dayWidth)} ${zoned[i]!.toFormat("HH:mm")}`,
+      );
+    });
+  }
+
+  lines.push("```");
+  return lines;
+}
+
+/**
+ * Print the configured cities' local times for a given time of day
+ * (or "now"). Returns a process exit code.
+ */
+export function runPrintMode(
+  positional: string[],
+  flags: { wide?: boolean } = {},
+): number {
   const timeArg = positional[0]!;
   const isNow = timeArg.toLowerCase() === "now";
   const parsed = isNow ? null : parseTimeArg(timeArg);
@@ -124,33 +204,11 @@ export function runPrintMode(positional: string[]): number {
   }
 
   const config = loadConfig();
-  const matched = resolved.matchedFrom
-    ? `  (${resolved.matchedFrom} → ${resolved.zone})`
-    : "";
-
-  const lines: string[] = [];
-  lines.push("```");
-  lines.push(
-    `${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched}`,
-  );
-  lines.push("");
-
-  // Furthest in the future (largest UTC offset) first.
-  const sorted = [...config.cities].sort(
-    (a, b) => ref.setZone(b.timezone).offset - ref.setZone(a.timezone).offset,
-  );
-  const nameWidth = Math.max(...sorted.map((c) => c.name.length));
-  const abbrWidth = Math.max(
-    ...sorted.map((c) => getAbbreviation(ref.setZone(c.timezone)).length),
-  );
-  for (const city of sorted) {
-    const zoned = ref.setZone(city.timezone);
-    lines.push(
-      `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(zoned).padEnd(abbrWidth)}  ${zoned.toFormat("HH:mm")}  ${zoned.toFormat("ccc yyyy-MM-dd")}`,
-    );
-  }
-  lines.push("```");
-
+  const lines = renderLookup(ref, config.cities, {
+    wide: flags.wide,
+    matchedFrom: resolved.matchedFrom,
+    zone: resolved.zone,
+  });
   console.log(lines.join("\n"));
   return 0;
 }

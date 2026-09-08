@@ -78,18 +78,26 @@ tzone-buddy now
 
 ````
 ```
-07:00 UTC — Mon 2026-09-07
+Mon 7 Sep 2026, 07:00 UTC
 
-🇯🇵 Tokyo   GMT+9  16:00  Mon 2026-09-07
-🇬🇧 London  GMT+1  08:00  Mon 2026-09-07
+🇯🇵 Tokyo   Mon 7 16:00
+🇬🇧 London  Mon 7 08:00
 ```
 ````
 
-Times accept `0700`, `07:00`, `7`, `7:30pm`, or `now` for the current time. Zones accept exact IANA names
-(`Asia/Tokyo`, `UTC`) or fuzzy city/country names (`Japan`, `Thailand`,
-`tokyo`). Entries are sorted by UTC offset, furthest in the future first. The
-output is wrapped in ``` fences so it pastes straight into markdown as a
-code block.
+Times accept `0700`, `07:00`, `7`, `7:30pm`, or `now` for the current time.
+Zones accept exact IANA names (`Asia/Tokyo`, `UTC`) or fuzzy city/country
+names (`Japan`, `Thailand`, `tokyo`). Entries are sorted by UTC offset,
+furthest in the future first, and the output is wrapped in ``` fences so it
+pastes straight into markdown as a code block.
+
+The default layout keeps every line within 32 columns so the code block
+survives phone-width chat clients unwrapped; the date appears once in the
+header (non-ISO, so mobile clients don't linkify it) plus a weekday + day on
+each row. City names longer than 12 characters are truncated — or set an
+optional `short` label per city in the config (e.g. `"short": "LA"`) to pick
+the abbreviation yourself. Pass `--wide` for the full layout with zone
+abbreviations and ISO dates per row, never truncated.
 
 ## ⌨️ Keyboard Shortcuts
 
