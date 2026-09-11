@@ -66,13 +66,16 @@ tzone-buddy
 
 ### Quick time lookup
 
-Pass a time (and optionally a timezone, defaulting to UTC) to print your
-configured cities at that moment instead of launching the TUI:
+Pass a time and/or date (and optionally a timezone, defaulting to UTC) to
+print your configured cities at that moment instead of launching the TUI:
 
 ```bash
 tzone-buddy 0700 UTC
 tzone-buddy 7:30pm Japan
 tzone-buddy 1400 Thailand
+tzone-buddy 0900 tomorrow new york
+tzone-buddy 2026-09-15 1830 Japan
+tzone-buddy fri 1000 London
 tzone-buddy now
 ```
 
@@ -86,8 +89,14 @@ Mon 7 Sep 2026, 07:00 UTC
 ````
 
 Times accept `0700`, `07:00`, `7`, `7:30pm`, or `now` for the current time.
-Zones accept exact IANA names (`Asia/Tokyo`, `UTC`) or fuzzy city/country
-names (`Japan`, `Thailand`, `tokyo`). Entries are sorted by UTC offset,
+Dates accept `2026-09-15`, `09-15` (this year), `15sep`, `sep 15`, `sep 15
+2027`, `today`, `tomorrow`, `yesterday`, a weekday name (`fri` — the next
+one, today included), or an offset (`+3d`, `-1w`). Time and date may appear
+in either order, and either may be omitted: a bare date uses the current
+time of day, and a bare time uses today. Relative dates resolve in the
+target zone, so `tomorrow Japan` is tomorrow in Tokyo. Zones accept exact
+IANA names (`Asia/Tokyo`, `UTC`) or fuzzy city/country names (`Japan`,
+`Thailand`, `tokyo`). Entries are sorted by UTC offset,
 furthest in the future first, and the output is wrapped in ``` fences so it
 pastes straight into markdown as a code block.
 
