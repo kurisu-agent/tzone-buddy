@@ -13,6 +13,7 @@ A beautiful terminal-based world clock TUI (Text User Interface) inspired by Wor
 - **⌨️ Vim-style navigation** - Intuitive keyboard shortcuts for power users
 - **🔄 Auto-updates** - Automatically checks for and installs updates
 - **🏠 Home timezone** - Always shows your system timezone at the top
+- **🙈 Session hiding** - Tuck rows away for the current session without deleting them
 - **📐 Responsive layout** - Adapts to your terminal size
 
 ## 📦 Installation
@@ -76,6 +77,7 @@ tzone-buddy 1400 Thailand
 tzone-buddy 0900 tomorrow new york
 tzone-buddy 2026-09-15 1830 Japan
 tzone-buddy fri 1000 London
+tzone-buddy fri 0900-1800 Japan
 tzone-buddy now
 ```
 
@@ -89,7 +91,11 @@ Mon 7 Sep 2026, 07:00 UTC
 ````
 
 Times accept `0700`, `07:00`, `7`, `7:30pm`, or `now` for the current time.
-Dates accept `2026-09-15`, `09-15` (this year), `15sep`, `sep 15`, `sep 15
+A range such as `0900-1800`, `9:00-18:00` or `9am-6pm` prints both ends on
+every row, with `+1` after an end time that falls on the next day in that
+zone (`Thu 10 17:00–02:00+1`); an end earlier than the start, like
+`2200-0200`, is taken as overnight. Both sides need to look like times, so
+`9-18` is still the date September 18. Dates accept `2026-09-15`, `09-15` (this year), `15sep`, `sep 15`, `sep 15
 2027`, `today`, `tomorrow`, `yesterday`, a weekday name (`fri` — the next
 one, today included), or an offset (`+3d`, `-1w`). Time and date may appear
 in either order, and either may be omitted: a bare date uses the current
@@ -121,7 +127,8 @@ abbreviations and ISO dates per row, never truncated.
 - `r` - Reset to current time
 - `t` - Toggle 12/24 hour format
 - `c` - Cycle through themes
-- `H` - Toggle home timezone display
+- `H` - Hide the selected row for this session (not saved)
+- `S` - Show hidden rows again
 - `u` - Update (when available)
 - `?` - Show help
 - `q` - Quit

@@ -64,6 +64,29 @@ export function parseTimeArg(arg: string): ParsedTime | null {
   return { hour, minute };
 }
 
+export interface ParsedTimeRange {
+  start: ParsedTime;
+  end: ParsedTime;
+}
+
+// A side of a range has to look unmistakably like a time (HHMM, H:MM, or
+// am/pm); "9-18" stays a month-day date as documented.
+const EXPLICIT_TIME = /^(\d{3,4}|\d{1,2}:\d{2})\s*(am|pm)?$|^\d{1,2}\s*(am|pm)$/i;
+
+/**
+ * Parse a time range: "0900-1800", "9:00-18:00", "9am-6pm" (also with an
+ * en dash). An end earlier than the start means it is on the next day.
+ */
+export function parseTimeRangeArg(arg: string): ParsedTimeRange | null {
+  const halves = arg.split(/[-–]/);
+  if (halves.length !== 2) return null;
+  const [a, b] = halves.map((h) => h.trim()) as [string, string];
+  if (!EXPLICIT_TIME.test(a) || !EXPLICIT_TIME.test(b)) return null;
+  const start = parseTimeArg(a);
+  const end = parseTimeArg(b);
+  return start && end ? { start, end } : null;
+}
+
 const MONTHS = [
   "january",
   "february",
@@ -209,20 +232,23 @@ export function parseDateArg(
 
 export interface LeadingArgs {
   time: ParsedTime | null;
+  /** Set when the time was given as a range; always paired with `time`. */
+  endTime: ParsedTime | null;
   date: ParsedDate | null;
   zoneQuery: string;
 }
 
 /**
- * Split positional args into an optional time, an optional date (in either
- * order) and the remaining zone query. Returns null when the first token is
- * none of those.
+ * Split positional args into an optional time or time range, an optional
+ * date (in either order) and the remaining zone query. Returns null when
+ * the first token is none of those.
  */
 export function parseLeadingArgs(
   positional: string[],
   now: DateTime,
 ): LeadingArgs | null {
   let time: ParsedTime | null = null;
+  let endTime: ParsedTime | null = null;
   let date: ParsedDate | null = null;
   let i = 0;
 
@@ -233,6 +259,13 @@ export function parseLeadingArgs(
       continue;
     }
     if (!time) {
+      const range = parseTimeRangeArg(token);
+      if (range) {
+        time = range.start;
+        endTime = range.end;
+        i += 1;
+        continue;
+      }
       const parsed = parseTimeArg(token);
       if (parsed) {
         time = parsed;
@@ -252,7 +285,12 @@ export function parseLeadingArgs(
   }
 
   if (i === 0) return null;
-  return { time, date, zoneQuery: positional.slice(i).join(" ") || "UTC" };
+  return {
+    time,
+    endTime,
+    date,
+    zoneQuery: positional.slice(i).join(" ") || "UTC",
+  };
 }
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
@@ -294,6 +332,15 @@ export interface RenderOptions {
   wide?: boolean;
   matchedFrom?: string;
   zone?: string;
+  /** End of a time range; rows render "HH:mm–HH:mm", "+1" past midnight. */
+  end?: DateTime;
+}
+
+function timeSpan(start: DateTime, end: DateTime | undefined): string {
+  const from = start.toFormat("HH:mm");
+  if (!end) return from;
+  const rollover = end.startOf("day") > start.startOf("day") ? "+1" : "";
+  return `${from}–${end.toFormat("HH:mm")}${rollover}`;
 }
 
 // Compact rows must stay within ~32 monospace columns so a code block
@@ -323,6 +370,7 @@ export function renderLookup(
     (a, b) => ref.setZone(b.timezone).offset - ref.setZone(a.timezone).offset,
   );
   const zoned = sorted.map((c) => ref.setZone(c.timezone));
+  const ends = sorted.map((c) => opts.end?.setZone(c.timezone));
   const matched = opts.matchedFrom
     ? `(${opts.matchedFrom} → ${opts.zone})`
     : "";
@@ -331,7 +379,7 @@ export function renderLookup(
 
   if (opts.wide) {
     lines.push(
-      `${ref.toFormat("HH:mm")} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched ? `  ${matched}` : ""}`,
+      `${timeSpan(ref, opts.end)} ${getAbbreviation(ref)} — ${ref.toFormat("ccc yyyy-MM-dd")}${matched ? `  ${matched}` : ""}`,
     );
     lines.push("");
     const nameWidth = Math.max(...sorted.map((c) => c.name.length));
@@ -339,12 +387,12 @@ export function renderLookup(
     sorted.forEach((city, i) => {
       const z = zoned[i]!;
       lines.push(
-        `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(z).padEnd(abbrWidth)}  ${z.toFormat("HH:mm")}  ${z.toFormat("ccc yyyy-MM-dd")}`,
+        `${countryFlag(city.country)} ${city.name.padEnd(nameWidth)}  ${getAbbreviation(z).padEnd(abbrWidth)}  ${timeSpan(z, ends[i])}  ${z.toFormat("ccc yyyy-MM-dd")}`,
       );
     });
   } else {
     lines.push(
-      `${ref.toFormat("ccc d MMM yyyy")}, ${ref.toFormat("HH:mm")} ${getAbbreviation(ref)}`,
+      `${ref.toFormat("ccc d MMM yyyy")}, ${timeSpan(ref, opts.end)} ${getAbbreviation(ref)}`,
     );
     if (matched) lines.push(matched);
     lines.push("");
@@ -357,7 +405,7 @@ export function renderLookup(
     const dayWidth = Math.max(...days.map((d) => d.length));
     sorted.forEach((city, i) => {
       lines.push(
-        `${countryFlag(city.country)} ${labels[i]!.padEnd(cityWidth)}  ${days[i]!.padEnd(dayWidth)} ${zoned[i]!.toFormat("HH:mm")}`,
+        `${countryFlag(city.country)} ${labels[i]!.padEnd(cityWidth)}  ${days[i]!.padEnd(dayWidth)} ${timeSpan(zoned[i]!, ends[i])}`,
       );
     });
   }
@@ -377,7 +425,7 @@ export function runPrintMode(
   const args = parseLeadingArgs(positional, DateTime.now());
   if (!args) {
     console.error(
-      `Invalid time or date: "${positional[0]}" (expected e.g. 0700, 07:00, 7pm, now, tomorrow, 2026-09-15)`,
+      `Invalid time or date: "${positional[0]}" (expected e.g. 0700, 07:00, 7pm, 0900-1800, now, tomorrow, 2026-09-15)`,
     );
     return 1;
   }
@@ -390,17 +438,21 @@ export function runPrintMode(
 
   let ref = DateTime.now().setZone(resolved.zone);
   // "tomorrow" means tomorrow in the target zone.
-  const { time, date } = ref.isValid ? parseLeadingArgs(positional, ref)! : args;
+  const { time, endTime, date } = ref.isValid
+    ? parseLeadingArgs(positional, ref)!
+    : args;
   if (date) {
     ref = ref.set(date);
   }
+  const at = (t: ParsedTime) =>
+    ref.set({ hour: t.hour, minute: t.minute, second: 0, millisecond: 0 });
   if (time) {
-    ref = ref.set({
-      hour: time.hour,
-      minute: time.minute,
-      second: 0,
-      millisecond: 0,
-    });
+    ref = at(time);
+  }
+  let end: DateTime | undefined;
+  if (endTime) {
+    end = at(endTime);
+    if (end < ref) end = end.plus({ days: 1 });
   }
   if (!ref.isValid) {
     console.error(`Unknown timezone: "${args.zoneQuery}"`);
@@ -412,6 +464,7 @@ export function runPrintMode(
     wide: flags.wide,
     matchedFrom: resolved.matchedFrom,
     zone: resolved.zone,
+    end,
   });
   console.log(lines.join("\n"));
   return 0;

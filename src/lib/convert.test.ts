@@ -4,6 +4,7 @@ import {
   parseDateArg,
   parseLeadingArgs,
   parseTimeArg,
+  parseTimeRangeArg,
   renderLookup,
   resolveZone,
 } from "./convert.js";
@@ -37,6 +38,35 @@ describe("parseTimeArg", () => {
     expect(parseTimeArg("2500")).toBeNull();
     expect(parseTimeArg("0790")).toBeNull();
     expect(parseTimeArg("abc")).toBeNull();
+  });
+});
+
+describe("parseTimeRangeArg", () => {
+  test("HHMM, colon and am/pm forms", () => {
+    const nineToSix = {
+      start: { hour: 9, minute: 0 },
+      end: { hour: 18, minute: 0 },
+    };
+    expect(parseTimeRangeArg("0900-1800")).toEqual(nineToSix);
+    expect(parseTimeRangeArg("9:00-18:00")).toEqual(nineToSix);
+    expect(parseTimeRangeArg("9am-6pm")).toEqual(nineToSix);
+    expect(parseTimeRangeArg("0900–1800")).toEqual(nineToSix);
+    expect(parseTimeRangeArg("9:30pm-1:15am")).toEqual({
+      start: { hour: 21, minute: 30 },
+      end: { hour: 1, minute: 15 },
+    });
+  });
+
+  test("bare numbers on both sides stay a date", () => {
+    expect(parseTimeRangeArg("9-18")).toBeNull();
+    expect(parseTimeRangeArg("09-15")).toBeNull();
+  });
+
+  test("not a range", () => {
+    expect(parseTimeRangeArg("0900")).toBeNull();
+    expect(parseTimeRangeArg("-1w")).toBeNull();
+    expect(parseTimeRangeArg("2026-09-15")).toBeNull();
+    expect(parseTimeRangeArg("0900-2500")).toBeNull();
   });
 });
 
@@ -106,16 +136,32 @@ describe("parseLeadingArgs", () => {
   test("time only keeps the old behaviour", () => {
     expect(on("0700")).toEqual({
       time: { hour: 7, minute: 0 },
+      endTime: null,
       date: null,
       zoneQuery: "UTC",
     });
     expect(on("7:30pm", "Japan")?.zoneQuery).toBe("Japan");
-    expect(on("now")).toEqual({ time: null, date: null, zoneQuery: "UTC" });
+    expect(on("now")).toEqual({
+      time: null,
+      endTime: null,
+      date: null,
+      zoneQuery: "UTC",
+    });
+  });
+
+  test("time range with a date in front", () => {
+    expect(on("fri", "0900-1800", "Japan")).toEqual({
+      time: { hour: 9, minute: 0 },
+      endTime: { hour: 18, minute: 0 },
+      date: { year: 2026, month: 9, day: 11 },
+      zoneQuery: "Japan",
+    });
   });
 
   test("date in either order", () => {
     const expected = {
       time: { hour: 7, minute: 0 },
+      endTime: null,
       date: { year: 2026, month: 9, day: 15 },
       zoneQuery: "Japan",
     };
@@ -131,6 +177,7 @@ describe("parseLeadingArgs", () => {
   test("date without a time", () => {
     expect(on("tomorrow", "Thailand")).toEqual({
       time: null,
+      endTime: null,
       date: { year: 2026, month: 9, day: 9 },
       zoneQuery: "Thailand",
     });
@@ -226,6 +273,35 @@ describe("renderLookup", () => {
     ]);
     expect(lines).toContain("🇺🇸 SF  Mon 7 17:00");
     expect(lines).toContain("🇺🇸 LA  Mon 7 17:00");
+  });
+
+  test("time range shows both ends and flags a next-day end", () => {
+    const start = DateTime.fromISO("2026-09-11T09:00", { zone: "Asia/Tokyo" });
+    const end = DateTime.fromISO("2026-09-11T18:00", { zone: "Asia/Tokyo" });
+    const lines = renderLookup(start, sampleCities, { end });
+    expect(lines[1]).toBe("Fri 11 Sep 2026, 09:00–18:00 GMT+9");
+    expect(lines).toContain("🇯🇵 Tokyo         Fri 11 09:00–18:00");
+    expect(lines).toContain("🇬🇧 London        Fri 11 01:00–10:00");
+    // 17:00 Thursday to 02:00 Friday in Los Angeles.
+    expect(lines).toContain("🇺🇸 Los Angeles   Thu 10 17:00–02:00+1");
+  });
+
+  test("overnight range marks the header too", () => {
+    const start = DateTime.fromISO("2026-09-11T22:00", { zone: "UTC" });
+    const end = DateTime.fromISO("2026-09-12T02:00", { zone: "UTC" });
+    const lines = renderLookup(start, sampleCities, { end });
+    expect(lines[1]).toBe("Fri 11 Sep 2026, 22:00–02:00+1 UTC");
+    expect(lines).toContain("🇯🇵 Tokyo         Sat 12 07:00–11:00");
+  });
+
+  test("--wide range", () => {
+    const start = DateTime.fromISO("2026-09-11T09:00", { zone: "Asia/Tokyo" });
+    const end = DateTime.fromISO("2026-09-11T18:00", { zone: "Asia/Tokyo" });
+    const lines = renderLookup(start, sampleCities, { end, wide: true });
+    expect(lines[1]).toBe("09:00–18:00 GMT+9 — Fri 2026-09-11");
+    expect(lines).toContain(
+      "🇺🇸 Los Angeles   PDT    17:00–02:00+1  Thu 2026-09-10",
+    );
   });
 
   test("--wide keeps the existing layout", () => {

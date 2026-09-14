@@ -11,6 +11,7 @@ import { useConfig } from "./hooks/useConfig.js";
 import { useTerminalSize } from "./hooks/useTerminalSize.js";
 import { useUpdateCheck } from "./hooks/useUpdateCheck.js";
 import { defaultCities, getHomeCity } from "./data/cities.js";
+import { cityKey, visibleCities } from "./lib/visible.js";
 import { TimelineGrid } from "./components/TimelineGrid.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { TimeSliderBar } from "./components/TimeSliderBar.js";
@@ -26,7 +27,8 @@ export function App() {
   const [selectedRow, setSelectedRow] = useState(0);
   const [themeIndex, setThemeIndex] = useState(0);
   const [use24h, setUse24h] = useState(true);
-  const [showHome, setShowHome] = useState(true);
+  // Rows hidden with H; lives only for this process, never saved.
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
   const { columns } = useTerminalSize();
 
   const theme = themes[themeIndex];
@@ -44,23 +46,13 @@ export function App() {
   // Update check hook
   const { updateAvailable, isUpdating, performUpdate } = useUpdateCheck();
 
-  // Display list: home city first (when shown), then the rest sorted by
-  // UTC offset, furthest in the future first.
-  const displayCities = useMemo(() => {
-    const filtered = showHome
-      ? cities.filter(
-          (c) => !(c.timezone === homeCity.timezone && c.name === homeCity.name),
-        )
-      : cities;
-    const sorted = [...filtered].sort(
-      (a, b) =>
-        referenceTime.setZone(b.timezone).offset -
-        referenceTime.setZone(a.timezone).offset,
-    );
-    return showHome ? [homeCity, ...sorted] : sorted;
-  }, [showHome, cities, homeCity, referenceTime]);
-
-  const homeOffset = showHome ? 1 : 0;
+  const displayCities = useMemo(
+    () => visibleCities(cities, homeCity, hidden, referenceTime),
+    [cities, homeCity, hidden, referenceTime],
+  );
+  const homeIndex = displayCities.findIndex((c) => cityKey(c) === cityKey(homeCity));
+  const isHome = (city: City | undefined) =>
+    city !== undefined && cityKey(city) === cityKey(homeCity);
 
   const rows = useTimezoneData(referenceTime, displayCities, homeCity.timezone, use24h);
   const maxCells = Math.min(24, Math.floor((columns - PANEL_WIDTH - 4) / CELL_WIDTH));
@@ -85,9 +77,9 @@ export function App() {
 
       if (input === "a") { setMode("search"); return; }
       if (input === "d") {
-        // Can't delete the home row
-        if (showHome && selectedRow === 0) return;
-        if (displayCities.length <= homeOffset + 1) return;
+        // Can't delete the home row, or the last other city.
+        if (isHome(displayCities[selectedRow])) return;
+        if (cities.filter((c) => !isHome(c)).length <= 1) return;
         setMode("confirmDelete");
         return;
       }
@@ -95,10 +87,13 @@ export function App() {
       if (input === "t") { setUse24h((prev) => !prev); return; }
       if (input === "c") { setThemeIndex((prev) => (prev + 1) % themes.length); return; }
       if (input === "H") {
-        setShowHome((prev) => !prev);
-        setSelectedRow(0);
+        const city = displayCities[selectedRow];
+        if (!city || displayCities.length <= 1) return;
+        setHidden((prev) => new Set([...prev, cityKey(city)]));
+        setSelectedRow((prev) => Math.min(prev, displayCities.length - 2));
         return;
       }
+      if (input === "S") { setHidden(new Set()); return; }
       if (input === "u" && updateAvailable && !isUpdating) {
         performUpdate();
         return;
@@ -114,7 +109,7 @@ export function App() {
       if (mode !== "confirmDelete") return;
       if (input === "y") {
         const city = displayCities[selectedRow];
-        if (city && !(showHome && selectedRow === 0)) removeCity(city);
+        if (city && !isHome(city)) removeCity(city);
         setSelectedRow((prev) => Math.min(prev, Math.max(0, displayCities.length - 2)));
         setMode("grid");
         return;
@@ -167,7 +162,7 @@ export function App() {
               panelWidth={PANEL_WIDTH}
               maxCells={maxCells}
               use24h={use24h}
-              homeIndex={showHome ? 0 : -1}
+              homeIndex={homeIndex}
             />
             {mode === "confirmDelete" && (
               <Box paddingX={2} marginTop={1}>
@@ -185,7 +180,7 @@ export function App() {
         )}
 
         <TimeSliderBar offsetMinutes={offsetMinutes} columns={columns} />
-        <HintBar mode={mode} updateAvailable={updateAvailable} />
+        <HintBar mode={mode} updateAvailable={updateAvailable} hiddenCount={hidden.size} />
       </Box>
     </ThemeContext.Provider>
   );
@@ -202,7 +197,8 @@ function HelpOverlay() {
     ["r", "Reset to now"],
     ["t", "Toggle 12/24 hour clock"],
     ["c", "Cycle theme"],
-    ["H", "Toggle home timezone"],
+    ["H", "Hide selected row (this session)"],
+    ["S", "Show hidden rows"],
     ["q", "Quit"],
   ];
 

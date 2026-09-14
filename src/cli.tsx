@@ -25,6 +25,7 @@ Terminal-based World Time Buddy TUI
 Usage:
   tzone-buddy                        Start the TUI application
   tzone-buddy <time> [zone]          Print configured cities at the given time
+  tzone-buddy <from>-<to> [zone]     Same, for a time range
   tzone-buddy <time> <date> [zone]   Same, on a given date (either order)
   tzone-buddy <date> [zone]          Same, at the current time of day
   tzone-buddy now [zone]             Same, at the current time
@@ -34,8 +35,9 @@ Usage:
   tzone-buddy --version              Show version
   tzone-buddy --help                 Show this help
 
-Times: 0700, 07:00, 7, 7:30pm, now
-Dates: 2026-09-15, 09-15, 15sep, sep 15, today, tomorrow, fri, +3d, -1w
+Times:  0700, 07:00, 7, 7:30pm, now
+Ranges: 0900-1800, 9:00-18:00, 9am-6pm (an end before the start is next day)
+Dates:  2026-09-15, 09-15, 15sep, sep 15, today, tomorrow, fri, +3d, -1w
 
 Examples:
   tzone-buddy 0700 UTC
@@ -44,6 +46,7 @@ Examples:
   tzone-buddy 0900 tomorrow new york
   tzone-buddy 2026-09-15 1830 Japan
   tzone-buddy fri 1000 London
+  tzone-buddy fri 0900-1800 Japan
   tzone-buddy now
   tzone-buddy now --wide
 
@@ -52,6 +55,7 @@ Keyboard shortcuts:
   d         Delete city
   ↑/↓       Navigate cities
   ←/→       Slide time
+  H / S     Hide selected row for this session / show hidden rows
   c         Cycle themes
   u         Update (when available)
   ?         Show help

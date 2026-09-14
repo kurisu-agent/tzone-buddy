@@ -15,7 +15,7 @@ const gridHints: Hint[] = [
   { key: "r", label: "Reset" },
   { key: "t", label: "12/24h" },
   { key: "c", label: "Theme" },
-  { key: "H", label: "Home" },
+  { key: "H", label: "Hide" },
   { key: "?", label: "Help" },
   { key: "q", label: "Quit" },
 ];
@@ -44,13 +44,24 @@ function getHints(mode: AppMode): Hint[] {
   }
 }
 
-export function HintBar({ mode, updateAvailable }: { mode: AppMode; updateAvailable?: boolean }) {
+interface Props {
+  mode: AppMode;
+  updateAvailable?: boolean;
+  hiddenCount?: number;
+}
+
+export function HintBar({ mode, updateAvailable, hiddenCount = 0 }: Props) {
   const t = useTheme();
   let hints = getHints(mode);
 
+  if (mode === "grid" && hiddenCount > 0) {
+    const at = hints.findIndex((h) => h.key === "H") + 1;
+    hints = [...hints.slice(0, at), { key: "S", label: `Show ${hiddenCount}` }, ...hints.slice(at)];
+  }
+
   // Add update hint if update is available and in grid mode
   if (mode === "grid" && updateAvailable) {
-    hints = [...hints.slice(0, -1), { key: "u", label: "Update" }, hints[hints.length - 1]];
+    hints = [...hints.slice(0, -1), { key: "u", label: "Update" }, hints[hints.length - 1]!];
   }
 
   return (
