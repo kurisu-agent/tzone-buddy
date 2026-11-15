@@ -25,7 +25,7 @@ curl -fsSL https://raw.githubusercontent.com/kurisu-agent/tzone-buddy/main/insta
 ```
 
 This will:
-- Detect your platform (Linux/macOS, x64/arm64)
+- Detect your architecture (Linux x64/arm64)
 - Download the appropriate binary
 - Install to `~/.local/bin`
 - Add to PATH if needed
@@ -36,8 +36,6 @@ Download the appropriate binary for your platform from the [latest release](http
 
 - Linux x64: `tzone-buddy-linux-x64`
 - Linux ARM64: `tzone-buddy-linux-arm64`
-- macOS x64: `tzone-buddy-darwin-x64`
-- macOS ARM64: `tzone-buddy-darwin-arm64`
 
 Then make it executable and move to your PATH:
 

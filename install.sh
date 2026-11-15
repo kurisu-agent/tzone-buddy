@@ -43,9 +43,6 @@ detect_platform() {
         linux)
             PLATFORM="linux"
             ;;
-        darwin)
-            PLATFORM="darwin"
-            ;;
         *)
             error "Unsupported operating system: $OS"
             ;;

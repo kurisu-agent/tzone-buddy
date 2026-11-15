@@ -29,8 +29,6 @@ jobs:
           mkdir -p dist
           bun build --compile --target=bun-linux-x64 --minify src/cli.tsx --outfile dist/tzone-buddy-linux-x64
           bun build --compile --target=bun-linux-arm64 --minify src/cli.tsx --outfile dist/tzone-buddy-linux-arm64
-          bun build --compile --target=bun-darwin-x64 --minify src/cli.tsx --outfile dist/tzone-buddy-darwin-x64
-          bun build --compile --target=bun-darwin-arm64 --minify src/cli.tsx --outfile dist/tzone-buddy-darwin-arm64
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -39,5 +37,3 @@ jobs:
           files: |
             dist/tzone-buddy-linux-x64
             dist/tzone-buddy-linux-arm64
-            dist/tzone-buddy-darwin-x64
-            dist/tzone-buddy-darwin-arm64

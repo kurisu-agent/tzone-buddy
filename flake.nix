@@ -3,15 +3,22 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    # Linux only. nixpkgs 26.11 dropped x86_64-darwin and throws on it, so
+    # one system list feeds both our outputs and bun2nix (flake-parts).
+    systems.url = "github:nix-systems/default-linux";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.systems.follows = "systems";
+    };
     bun2nix = {
-      url = "github:nix-community/bun2nix?tag=2.0.8";
+      url = "github:nix-community/bun2nix/2.0.8";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, bun2nix }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, systems, flake-utils, bun2nix }:
+    flake-utils.lib.eachSystem (import systems) (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (pkgs) lib stdenv;
@@ -80,7 +87,7 @@
             homepage = "https://github.com/kurisu-agent/tzone-buddy";
             license = lib.licenses.mit;
             mainProgram = "tzone-buddy";
-            platforms = lib.platforms.unix;
+            platforms = lib.platforms.linux;
           };
         };
       in {
